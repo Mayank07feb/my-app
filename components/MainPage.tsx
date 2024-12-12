@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
 import { ClipboardList } from 'lucide-react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView } from 'moti'; // Import Moti for animations
@@ -10,16 +10,16 @@ const MainPage = ({ onContinue }) => {
   return (
     <LinearGradient
       colors={['#008080', '#20B2AA', '#40E0D0']}
-      className="flex-1 items-center justify-center" // Ensures everything is centered
+      style={styles.gradientContainer}
     >
       {/* Animated Header */}
       <MotiView
         from={{ opacity: 0, translateY: -30 }}
         animate={{ opacity: 1, translateY: 0 }}
         transition={{ type: 'spring', stiffness: 100, damping: 15, delay: 300 }}
-        className="mb-4"
+        style={styles.headerContainer}
       >
-        <Text className="text-white text-5xl font-bold">
+        <Text style={styles.headerText}>
           Attendance Pro
         </Text>
       </MotiView>
@@ -29,9 +29,11 @@ const MainPage = ({ onContinue }) => {
         from={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 800, delay: 500 }}
-        className="text-white/90 text-xl text-center mb-10 px-6"
+        style={styles.subheading}
       >
-        Smart Attendance Tracking & Management
+        <Text style={styles.subheadingText}>
+          Smart Attendance Tracking & Management
+        </Text>
       </MotiView>
 
       {/* Animated Icon */}
@@ -39,14 +41,7 @@ const MainPage = ({ onContinue }) => {
         from={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: 'spring', stiffness: 100, damping: 15, delay: 700 }}
-        className="bg-white/25 rounded-full p-8 mb-10"
-        style={{
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.3,
-          shadowRadius: 10,
-          elevation: 15,
-        }}
+        style={styles.iconContainer}
       >
         <ClipboardList 
           color="#ffffff" 
@@ -60,21 +55,13 @@ const MainPage = ({ onContinue }) => {
         from={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1000 }}
-        className="w-full items-center justify-center" // Center button horizontally
+        style={styles.buttonContainer}
       >
         <TouchableOpacity 
           onPress={onContinue}
-          className="bg-white/20 rounded-full py-4 border-2 border-white/30 flex-row items-center justify-center"
-          style={{
-            width: width * 0.75,
-            shadowColor: "#008080",
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.3,
-            shadowRadius: 10,
-            elevation: 15,
-          }}
+          style={styles.button}
         >
-          <Text className="text-white text-lg font-bold tracking-wider">
+          <Text style={styles.buttonText}>
             Get Started
           </Text>
         </TouchableOpacity>
@@ -82,5 +69,68 @@ const MainPage = ({ onContinue }) => {
     </LinearGradient>
   );
 };
+
+const styles = StyleSheet.create({
+  gradientContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerContainer: {
+    marginBottom: 16,
+  },
+  headerText: {
+    color: 'white',
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  subheading: {
+    marginBottom: 40,
+    paddingHorizontal: 24,
+  },
+  subheadingText: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 20,
+    textAlign: 'center',
+  },
+  iconContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderRadius: 100,
+    padding: 32,
+    marginBottom: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 15,
+  },
+  buttonContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  button: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 50,
+    paddingVertical: 16,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: width * 0.75,
+    shadowColor: '#008080',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 15,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 1.5,
+  },
+});
 
 export default MainPage;
