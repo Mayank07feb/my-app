@@ -1,0 +1,108 @@
+import React, { useState, useEffect } from 'react';
+import { fetchAttendanceData } from '../api/api';
+
+const TestingScreen = () => {
+    const [attendanceData, setAttendanceData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Fetch data on component mount
+    useEffect(() => {
+        const getAttendanceData = async () => {
+            try {
+                const data = await fetchAttendanceData();
+                setAttendanceData(data);
+                setLoading(false);  // Set loading to false after data is fetched
+            } catch (error) {
+                setError(error.message);  // Set error message if request fails
+                setLoading(false);
+            }
+        };
+
+        getAttendanceData();
+    }, []);  // Empty dependency array makes this effect run only once on mount
+
+    if (loading) return <div>Loading...</div>;  // Show loading text
+    if (error) return <div>Error: {error}</div>;  // Show error message if any
+
+    return (
+        <div style={{ padding: '20px' }}>
+            <h1>Attendance Data</h1>
+            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                {attendanceData && attendanceData.length > 0 ? (
+                    attendanceData.map((attendance, index) => (
+                        <div key={attendance.id} style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
+                            <h2>{attendance.name} ({attendance.designation || 'N/A'})</h2>
+                            <p><strong>Email:</strong> {attendance.email}</p>
+                            <p><strong>Phone:</strong> {attendance.phone || 'N/A'}</p>
+                            <p><strong>Salary:</strong> {attendance.salary}</p>
+                            <p><strong>Check-in Time:</strong> {new Date(attendance.check_in_time).toLocaleString()}</p>
+                            <p><strong>Check-out Time:</strong> {new Date(attendance.check_out_time).toLocaleString()}</p>
+
+                            {attendance.latest_attendance && (
+                                <div>
+                                    <h3>Latest Attendance Details:</h3>
+                                    <p><strong>Check-in Time:</strong> {new Date(attendance.latest_attendance.check_in).toLocaleString()}</p>
+                                    <p><strong>Check-out Time:</strong> {new Date(attendance.latest_attendance.check_out).toLocaleString()}</p>
+                                    <p><strong>Check-in Note:</strong> {attendance.latest_attendance.check_in_note}</p>
+                                    <p><strong>Check-out Note:</strong> {attendance.latest_attendance.check_out_note || 'N/A'}</p>
+                                    <p><strong>Late Duration (minutes):</strong> {attendance.latest_attendance.late}</p>
+
+                                    {/* Check-in Image */}
+                                    {attendance.latest_attendance.check_in_image && (
+                                        <div>
+                                            <h4>Check-in Image:</h4>
+                                            <img 
+                                                src={`https://at.realvictorygroups.xyz/storage/${attendance.latest_attendance.check_in_image}`} 
+                                                alt="Check-in"
+                                                style={{ width: '100%', maxWidth: '400px', marginBottom: '10px' }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Check-out Image */}
+                                    {attendance.latest_attendance.check_out_image && (
+                                        <div>
+                                            <h4>Check-out Image:</h4>
+                                            <img 
+                                                src={`https://at.realvictorygroups.xyz/storage/${attendance.latest_attendance.check_out_image}`} 
+                                                alt="Check-out"
+                                                style={{ width: '100%', maxWidth: '400px' }}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <p>No attendance data available.</p>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default TestingScreen;
+
+
+
+// src/api/api.js
+export const fetchAttendanceData = async () => {
+  const apiUrl = 'https://at.realvictorygroups.xyz/api/attendance/day_wise';
+  const token = 'Bearer 1|Tw4EJlKlvdO6ZWgvguplEQVbq5AaLsEI3Dm4YuCGd77f26ad';
+
+  try {
+      const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+              'Authorization': token,
+              'Content-Type': 'application/json',
+          },
+      });
+      const data = await response.json();
+      return data;  // Return the data
+  } catch (error) {
+      throw new Error('Error fetching attendance data: ' + error.message);
+  }
+};
