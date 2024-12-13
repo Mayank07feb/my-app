@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList } from 'lucide-react-native'; // Updated import
 import { LinearGradient } from 'expo-linear-gradient';
-import { MotiView } from 'moti'; // Import Moti for animations
+import { MotiView } from 'moti';
 
 const { width } = Dimensions.get('window');
 
@@ -23,7 +23,7 @@ const MainPage = ({ onContinue }) => {
           Attendance Pro
         </Text>
       </MotiView>
-      
+     
       {/* Animated Subheading */}
       <MotiView
         from={{ opacity: 0 }}
@@ -35,7 +35,7 @@ const MainPage = ({ onContinue }) => {
           Smart Attendance Tracking & Management
         </Text>
       </MotiView>
-
+      
       {/* Animated Icon */}
       <MotiView
         from={{ opacity: 0, scale: 0.5 }}
@@ -43,13 +43,13 @@ const MainPage = ({ onContinue }) => {
         transition={{ type: 'spring', stiffness: 100, damping: 15, delay: 700 }}
         style={styles.iconContainer}
       >
-        <ClipboardList 
-          color="#ffffff" 
-          size={100} 
-          strokeWidth={1.5} 
+        <ClipboardList
+          color="#ffffff"
+          size={100}
+          strokeWidth={1.5}
         />
       </MotiView>
-
+      
       {/* Animated Button */}
       <MotiView
         from={{ scale: 0.8, opacity: 0 }}
@@ -57,7 +57,7 @@ const MainPage = ({ onContinue }) => {
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1000 }}
         style={styles.buttonContainer}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={onContinue}
           style={styles.button}
         >

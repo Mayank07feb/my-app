@@ -50,7 +50,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <View className="w-full flex-row items-center justify-between bg-teal-600 p-4 border-b border-teal-500 shadow-md">
+    <View className="w-full flex-row items-center justify-between bg-teal-600 p-4 border-b border-teal-500 shadow-md mt-10">
       {/* Left Section with Hamburger Icon and Title */}
       <View className="flex-row items-center">
         {/* Hamburger Icon for Sidebar */}
