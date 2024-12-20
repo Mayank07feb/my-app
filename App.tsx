@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, Image, Button } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import HomeScreen from './screens/HomeScreen';
 import CheckInScreen from './screens/CheckInScreen';
 import CheckOutScreen from './screens/CheckOutScreen';
@@ -20,6 +21,7 @@ import SignupScreen from './screens/SignupScreen';
 import MainPage from './components/MainPage';
 import TestingScreen from './screens/TestingScreen';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { getUserData, clearUserData, getAuthToken } from './api/api';
 import './global.css';
 
 // Navigators
@@ -59,7 +61,7 @@ const AppDrawer: React.FC = () => (
         backgroundColor: '#008080', // Set the header background color
       },
       headerTintColor: 'white', // Set header text color to white
-      headerShown: false, // Show the header in the drawer
+      headerShown: false, // Hide the header in the drawer
       drawerActiveBackgroundColor: '#006666', // Set active drawer background color
       drawerInactiveTintColor: 'white', // Set color of inactive items
       drawerActiveTintColor: 'white', // Set color of active items
@@ -179,55 +181,68 @@ const AppDrawer: React.FC = () => (
   </Drawer.Navigator>
 );
 
-
-
-// Main App Component
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login status
   const [hasVisitedMainPage, setHasVisitedMainPage] = useState(false); // Track MainPage visit
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        {!hasVisitedMainPage && (
-          <Stack.Screen name="MainPage"
-            options={{ headerShown: false }}>
-            {(props) => (
-              <MainPage {...props} onContinue={() => setHasVisitedMainPage(true)} />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea}>
+        <NavigationContainer>
+          <Stack.Navigator>
+            {/* MainPage will be the first screen */}
+            {!hasVisitedMainPage && (
+              <Stack.Screen name="MainPage" options={{ headerShown: false }}>
+                {(props) => (
+                  <MainPage {...props} onContinue={() => setHasVisitedMainPage(true)} />
+                )}
+              </Stack.Screen>
             )}
-          </Stack.Screen>
-        )}
 
-        {!isLoggedIn && (
-          <>
-            <Stack.Screen name="Login"
-              options={{ headerShown: false }}>
-              {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
-            </Stack.Screen>
-            <Stack.Screen
-              options={{ headerShown: false }}
-              name="Signup" component={SignupScreen} />
-          </>
-        )}
+            {/* If the user is not logged in, show Login and Signup screens */}
+            {!isLoggedIn && (
+              <>
+                <Stack.Screen name="Login" options={{ headerShown: false }}>
+                  {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+                </Stack.Screen>
+                <Stack.Screen
+                  options={{ headerShown: false }}
+                  name="Signup" 
+                  component={SignupScreen} 
+                />
+              </>
+            )}
 
-        {isLoggedIn && (
-          <>
-            <Stack.Screen
-              name="MainApp"
-              component={AppDrawer}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Check-In" component={CheckInScreen} />
-            <Stack.Screen name="Check-Out" component={CheckOutScreen} />
-            <Stack.Screen name="Take-Break" component={TakeBreakScreen} />
-            <Stack.Screen name="Leave" component={LeaveScreen} />
-            <Stack.Screen name="Notifications" component={NotificationScreen} />
-            <Stack.Screen name="Settings" component={SettingScreen} />
-            <Stack.Screen name="Account" component={AccountScreen} />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+            {/* If the user is logged in, show the main app screens */}
+            {isLoggedIn && (
+              <>
+                <Stack.Screen
+                  name="MainApp"
+                  component={AppDrawer}
+                  options={{ headerShown: false }}
+                />
+                {/* Add other app screens below */}
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="Check-In" component={CheckInScreen} />
+                <Stack.Screen name="Check-Out" component={CheckOutScreen} />
+                <Stack.Screen name="Take-Break" component={TakeBreakScreen} />
+                <Stack.Screen name="Leave" component={LeaveScreen} />
+                <Stack.Screen name="Notifications" component={NotificationScreen} />
+                <Stack.Screen name="Settings" component={SettingScreen} />
+                <Stack.Screen name="Account" component={AccountScreen} />
+              </>
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
+
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f5f5f5', 
+  },
+});

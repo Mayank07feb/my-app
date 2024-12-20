@@ -1,18 +1,27 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useEffect } from 'react';
 
 const BottomBar: React.FC = () => {
   const navigation = useNavigation();
+  const route = useRoute();
   const [activeTab, setActiveTab] = useState<string>('Home');
 
+  // Update active tab based on current route when component mounts or route changes
+  useEffect(() => {
+    setActiveTab(route.name);
+  }, [route.name]);
+
   // Define color for active and inactive states
-  const getColor = (tab: string) => (tab === activeTab ? '#14B8A6' : '#B0BEC5'); // Teal for active, gray for inactive
+  const getColor = (tab: string) => (tab === activeTab ? '#14B8A6' : '#B0BEC5');
 
   const handleNavigation = (tab: string) => {
-    setActiveTab(tab);
-    navigation.navigate(tab); // Navigate to the corresponding screen
+    // Only navigate if it's a different tab
+    if (tab !== activeTab) {
+      navigation.navigate(tab);
+    }
   };
 
   return (
@@ -27,18 +36,16 @@ const BottomBar: React.FC = () => {
           Home
         </Text>
       </TouchableOpacity>
-
       {/* Reports Button */}
       <TouchableOpacity
         className="flex items-center"
         onPress={() => handleNavigation('ReportsScreen')}
       >
-        <Icon name="document-text-outline" size={24} color={getColor('Reports')} />
-        <Text className="text-sm" style={{ color: getColor('Reports') }}>
+        <Icon name="document-text-outline" size={24} color={getColor('ReportsScreen')} />
+        <Text className="text-sm" style={{ color: getColor('ReportsScreen') }}>
           Reports
         </Text>
       </TouchableOpacity>
-
       {/* Records Button */}
       <TouchableOpacity
         className="flex items-center"
@@ -49,18 +56,16 @@ const BottomBar: React.FC = () => {
           Records
         </Text>
       </TouchableOpacity>
-
       {/* Attendance Button */}
       <TouchableOpacity
         className="flex items-center"
         onPress={() => handleNavigation('MonthlyAttendanceRecords')}
       >
-        <Icon name="time-outline" size={24} color={getColor('Attendance')} />
-        <Text className="text-sm" style={{ color: getColor('Attendance') }}>
+        <Icon name="time-outline" size={24} color={getColor('MonthlyAttendanceRecords')} />
+        <Text className="text-sm" style={{ color: getColor('MonthlyAttendanceRecords') }}>
           Attendance
         </Text>
       </TouchableOpacity>
-
       {/* Account Button */}
       <TouchableOpacity
         className="flex items-center"

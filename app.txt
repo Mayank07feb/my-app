@@ -1,0 +1,341 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, Alert } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import HomeScreen from './screens/HomeScreen';
+import CheckInScreen from './screens/CheckInScreen';
+import CheckOutScreen from './screens/CheckOutScreen';
+import TakeBreakScreen from './screens/TakeBreakScreen';
+import LeaveScreen from './screens/LeaveScreen';
+import NotificationScreen from './screens/NotificationScreen';
+import AttendanceRecord from './screens/AttendanceRecord';
+import MonthlyAttendanceRecords from './screens/MonthlyAttendanceRecords';
+import ReportsScreen from './screens/ReportsScreen';
+import SettingScreen from './screens/SettingScreen';
+import AccountScreen from './screens/AccountScreen';
+import LoginScreen from './screens/LoginScreen';
+import SignupScreen from './screens/SignupScreen';
+import MainPage from './components/MainPage';
+import TestingScreen from './screens/TestingScreen';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import './global.css';
+
+// Type definitions
+type RootStackParamList = {
+  MainPage: undefined;
+  Login: undefined;
+  Signup: undefined;
+  MainApp: undefined;
+};
+
+type DrawerParamList = {
+  Dashboard: undefined;
+  Home: undefined;
+  'Check-In': undefined;
+  Testing: undefined;
+  'Check-Out': undefined;
+  Records: undefined;
+  MonthlyAttendanceRecords: undefined;
+  ReportsScreen: undefined;
+  'Take-Break': undefined;
+  Leave: undefined;
+  Notifications: undefined;
+  Settings: undefined;
+  Account: undefined;
+  Logout: undefined;
+};
+
+// Initialize navigators with types
+const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const Drawer = createDrawerNavigator<DrawerParamList>();
+
+// Custom Drawer Content Component
+const CustomDrawerContent = (props: any) => {
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken');
+      props.setIsLoggedIn(false);
+      props.navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Failed to logout. Please try again.');
+    }
+  };
+
+  return (
+    <DrawerContentScrollView {...props}>
+      <View style={styles.drawerHeader}>
+        <Image
+          source={{ uri: 'https://randomuser.me/api/portraits/men/3.jpg' }}
+          style={styles.profileImage}
+        />
+        <Text style={styles.profileName}>Mayank Sharma</Text>
+      </View>
+      <DrawerItemList {...props} />
+      <DrawerItem
+        label="Logout"
+        onPress={handleLogout}
+        icon={({ size }) => <Icon name="exit-to-app" size={size} color="white" />}
+        labelStyle={styles.drawerLabel}
+      />
+    </DrawerContentScrollView>
+  );
+};
+
+// Bottom Tab Navigator
+const AppTabs: React.FC = () => (
+  <Tab.Navigator
+    screenOptions={{
+      headerShown: false,
+      tabBarStyle: { display: 'none' },
+    }}
+  >
+    <Tab.Screen name="HomeTab" component={HomeScreen} />
+    <Tab.Screen name="CheckOutTab" component={CheckOutScreen} />
+    <Tab.Screen name="RecordsTab" component={AttendanceRecord} />
+    <Tab.Screen name="AccountTab" component={AccountScreen} />
+  </Tab.Navigator>
+);
+
+// Drawer Navigator
+const AppDrawer: React.FC<{ setIsLoggedIn: (value: boolean) => void }> = ({ setIsLoggedIn }) => (
+  <Drawer.Navigator
+    drawerContent={(props) => <CustomDrawerContent {...props} setIsLoggedIn={setIsLoggedIn} />}
+    screenOptions={{
+      drawerStyle: styles.drawer,
+      drawerLabelStyle: styles.drawerLabel,
+      headerStyle: styles.drawerHeader,
+      headerTintColor: 'white',
+      headerShown: false,
+      drawerActiveBackgroundColor: '#006666',
+      drawerInactiveTintColor: 'white',
+      drawerActiveTintColor: 'white',
+    }}
+  >
+    <Drawer.Screen
+      name="Dashboard"
+      component={AppTabs}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="dashboard" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Home"
+      component={HomeScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="home" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Check-In"
+      component={CheckInScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="login" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Testing"
+      component={TestingScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="bug-report" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Check-Out"
+      component={CheckOutScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="logout" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Records"
+      component={AttendanceRecord}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="history" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="MonthlyAttendanceRecords"
+      component={MonthlyAttendanceRecords}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="calendar-today" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="ReportsScreen"
+      component={ReportsScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="assessment" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Take-Break"
+      component={TakeBreakScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="local-cafe" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Leave"
+      component={LeaveScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="beach-access" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Notifications"
+      component={NotificationScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="notifications" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Settings"
+      component={SettingScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="settings" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Account"
+      component={AccountScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="account-circle" size={size} color="white" />,
+      }}
+    />
+  </Drawer.Navigator>
+);
+
+// Main App Component
+const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasVisitedMainPage, setHasVisitedMainPage] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check for stored authentication token
+    const checkToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const visited = await AsyncStorage.getItem('hasVisitedMainPage');
+        setIsLoggedIn(!!token);
+        setHasVisitedMainPage(!!visited);
+      } catch (error) {
+        console.error('Error checking auth state:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkToken();
+  }, []);
+
+  const handleMainPageVisit = async () => {
+    try {
+      await AsyncStorage.setItem('hasVisitedMainPage', 'true');
+      setHasVisitedMainPage(true);
+    } catch (error) {
+      console.error('Error saving main page visit:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea}>
+        <NavigationContainer
+          fallback={<Text>Loading...</Text>}
+        >
+          <Stack.Navigator>
+            {!hasVisitedMainPage && (
+              <Stack.Screen 
+                name="MainPage" 
+                options={{ headerShown: false }}
+              >
+                {(props) => (
+                  <MainPage {...props} onContinue={handleMainPageVisit} />
+                )}
+              </Stack.Screen>
+            )}
+
+            {!isLoggedIn ? (
+              <>
+                <Stack.Screen 
+                  name="Login" 
+                  options={{ headerShown: false }}
+                >
+                  {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+                </Stack.Screen>
+                <Stack.Screen
+                  name="Signup"
+                  component={SignupScreen}
+                  options={{ headerShown: false }}
+                />
+              </>
+            ) : (
+              <Stack.Screen
+                name="MainApp"
+                options={{ headerShown: false }}
+              >
+                {(props) => <AppDrawer {...props} setIsLoggedIn={setIsLoggedIn} />}
+              </Stack.Screen>
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
+};
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  drawer: {
+    backgroundColor: '#008080',
+    width: 280,
+  },
+  drawerLabel: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  drawerHeader: {
+    backgroundColor: '#006666',
+    padding: 16,
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 12,
+  },
+  profileName: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+});
+
+export default App;

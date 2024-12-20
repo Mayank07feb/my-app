@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Platform, Image, ActivityIndicator, Alert } from 'react-native';
 import { Camera } from 'expo-camera';
 import ReactWebcam from 'react-webcam';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { getCurrentLocation } from '../utils/geolocation'; // Make sure to define this utility function
-import { checkIn } from '../api/api'; // Import the checkIn function
+import { getCurrentLocation } from '../utils/geolocation';
+import { checkIn } from '../api/checkin';
 import Layout from '../components/Layout';
 
 const CheckInScreen: React.FC = () => {
@@ -13,6 +13,8 @@ const CheckInScreen: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [camera, setCamera] = useState<Camera | null>(null);
+  const [loading, setLoading] = useState(false); // Loading state
+  const [checkInRecords, setCheckInRecords] = useState<any[]>([]); // Store check-in records
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -48,21 +50,36 @@ const CheckInScreen: React.FC = () => {
   };
 
   const handleCheckIn = async () => {
-    const locationData = await getCurrentLocation();
-    setLocation(locationData);
-    console.log('Checked in at:', locationData);
+    try {
+      const locationData = await getCurrentLocation();
+      setLocation(locationData);
+      console.log('Checked in at:', locationData);
+    } catch (error: any) {
+      Alert.alert('Location Error', error.message || 'Unable to fetch location.');
+    }
   };
 
   const handleSubmit = async () => {
+    if (!photoUri || !location) {
+      Alert.alert('Missing Data', 'Photo and location are required for check-in.');
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      if (photoUri && location) {
-        const result = await checkIn(photoUri, location);
-        console.log('Check-in successful:', result.message); // You can display this message or use it accordingly
-        // Optionally, navigate to another screen or show success message
-      }
+      const result = await checkIn(photoUri, location);
+      console.log('Check-in successful:', result.message);
+      Alert.alert('Check-in Successful', result.message || 'You have been checked in.');
+
+      // Add to check-in records and reset photo/location
+      setCheckInRecords((prev) => [...prev, { photoUri, location, time: currentTime }]);
+      setPhotoUri(null);
+      setLocation(null);
     } catch (error: any) {
-      console.error('Error during check-in:', error.message);
-      // Optionally, show an error message to the user
+      Alert.alert('Check-in Error', error.message || 'Unable to check in.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,13 +143,19 @@ const CheckInScreen: React.FC = () => {
 
         <TouchableOpacity
           onPress={handleSubmit}
-          disabled={!photoUri || !location}
+          disabled={!photoUri || !location || loading}
           className={`flex-row items-center justify-center py-3 rounded-lg ${
-            photoUri && location ? 'bg-teal-500' : 'bg-gray-400'
+            photoUri && location && !loading ? 'bg-teal-500' : 'bg-gray-400'
           }`}
         >
-          <Icon name="send-outline" size={20} color="#fff" />
-          <Text className="text-white font-semibold text-lg ml-2">Submit</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Icon name="send-outline" size={20} color="#fff" />
+              <Text className="text-white font-semibold text-lg ml-2">Submit</Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {location && (
@@ -140,6 +163,26 @@ const CheckInScreen: React.FC = () => {
             <Text className="text-teal-600 text-center">
               Location: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
             </Text>
+          </View>
+        )}
+
+        {checkInRecords.length > 0 && (
+          <View className="mt-6">
+            <Text className="text-lg font-semibold text-teal-700 mb-2">Check-In Records:</Text>
+            {checkInRecords.map((record, index) => (
+              <View key={index} className="flex-row items-center justify-between mb-2">
+                <Image
+                  source={{ uri: record.photoUri }}
+                  className="w-16 h-16 rounded-full mr-4"
+                />
+                <Text className="text-sm text-gray-700">
+                  {record.location.latitude.toFixed(4)}, {record.location.longitude.toFixed(4)}
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  {new Date(record.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </View>
+            ))}
           </View>
         )}
       </ScrollView>

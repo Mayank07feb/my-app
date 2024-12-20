@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { loginUser } from '../api/api'; // Assuming you have the API call here.
+import { loginUser } from '../api/api'; // Replace with your actual API import
 
 interface LoginScreenProps {
   navigation: any;
@@ -18,7 +25,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, setIsLoggedIn }) 
     setError(null); // Clear previous errors
     setLoading(true);
 
-    // Simple validation
     if (!email || !password) {
       setError('Please enter valid credentials.');
       setLoading(false);
@@ -26,72 +32,114 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, setIsLoggedIn }) 
     }
 
     try {
-      // Call the API
-      const response = await loginUser(email, password);
+      const response = await loginUser(email, password); // API call
 
-      // Save the token to AsyncStorage
+      if (!response || !response.token) {
+        throw new Error('Invalid response from server.');
+      }
+
+      // Save token to AsyncStorage
       await AsyncStorage.setItem('token', response.token);
 
-      // Update the login status
+      // Update the logged-in status
       setIsLoggedIn(true);
 
-      // Navigate to the dashboard or home page
-      navigation.replace('Home'); // Replace with your desired screen
-    } catch (error: any) {
-      setError(error.message || 'An error occurred during login.');
+      // Navigate to the Home screen via the drawer navigator
+      navigation.replace('MainApp'); // Replace the login screen with the main app
+
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during login.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View className="flex-1 justify-center bg-teal-50 p-6">
-      {/* App Logo or Title */}
-      <View className="items-center mb-8">
-        <Text className="text-3xl font-bold text-teal-700">Attendance App</Text>
+    <View style={{ flex: 1, justifyContent: 'center', backgroundColor: '#e6f7f9', padding: 24 }}>
+      {/* App Title */}
+      <View style={{ alignItems: 'center', marginBottom: 32 }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0d9488' }}>Attendance App</Text>
       </View>
 
       {/* Login Form */}
       <View>
-        <Text className="text-xl font-semibold text-teal-700 mb-4">Login</Text>
+        <Text style={{ fontSize: 20, fontWeight: '600', color: '#0d9488', marginBottom: 16 }}>
+          Login
+        </Text>
 
-        {error && <Text className="text-red-600 mb-4">{error}</Text>} {/* Error message */}
+        {/* Display Error Message */}
+        {error && <Text style={{ color: '#dc2626', marginBottom: 16 }}>{error}</Text>}
 
+        {/* Email Input */}
         <TextInput
-          className="w-full mb-4 p-4 bg-white rounded-lg shadow-sm text-teal-800"
+          style={{
+            width: '100%',
+            marginBottom: 16,
+            padding: 12,
+            backgroundColor: '#fff',
+            borderRadius: 8,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 2,
+            color: '#134e4a',
+          }}
           placeholder="Email"
-          placeholderTextColor="#999"
+          placeholderTextColor="#94a3b8"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
         />
+
+        {/* Password Input */}
         <TextInput
-          className="w-full mb-6 p-4 bg-white rounded-lg shadow-sm text-teal-800"
+          style={{
+            width: '100%',
+            marginBottom: 24,
+            padding: 12,
+            backgroundColor: '#fff',
+            borderRadius: 8,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 2,
+            color: '#134e4a',
+          }}
           placeholder="Password"
-          placeholderTextColor="#999"
+          placeholderTextColor="#94a3b8"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
         />
 
+        {/* Login Button */}
         <TouchableOpacity
-          className="w-full p-4 bg-teal-600 rounded-lg items-center"
+          style={{
+            width: '100%',
+            padding: 16,
+            backgroundColor: '#0d9488',
+            borderRadius: 8,
+            alignItems: 'center',
+            opacity: loading ? 0.7 : 1,
+          }}
           onPress={handleLogin}
-          disabled={loading} // Disable button when loading
+          disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator size="small" color="#fff" /> // Show loading spinner
+            <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text className="text-white text-lg font-semibold">Login</Text>
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Login</Text>
           )}
         </TouchableOpacity>
       </View>
 
       {/* Sign Up Redirect */}
-      <View className="mt-6 items-center">
+      <View style={{ marginTop: 24, alignItems: 'center' }}>
         <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-          <Text className="text-teal-600 text-base underline">
+          <Text style={{ color: '#0d9488', textDecorationLine: 'underline', fontSize: 14 }}>
             Don't have an account? Sign up
           </Text>
         </TouchableOpacity>
