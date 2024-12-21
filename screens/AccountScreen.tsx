@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import Layout from '../components/Layout';
-import { getUserData, getAuthToken } from '../api/api';
+import { getUserData, getAuthToken, logoutUser } from '../api/api';  // Import logoutUser function
+import { useNavigation } from '@react-navigation/native';  // Import navigation
 
 const AccountScreen: React.FC = () => {
   const [user, setUser] = useState({
@@ -18,13 +19,16 @@ const AccountScreen: React.FC = () => {
     salary: '',
   });
 
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);  // Added loading state for logout
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmNewPassword, setConfirmNewPassword] = useState<string>('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [logoutMessage, setLogoutMessage] = useState<string>('');  // For success message
+
+  const navigation = useNavigation();  // Access navigation
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -71,8 +75,28 @@ const AccountScreen: React.FC = () => {
     Alert.alert('Success', 'Password updated successfully!');
   };
 
-  const handleLogout = () => {
-    Alert.alert('Logged Out', 'You have been logged out successfully!');
+  const handleLogout = async () => {
+    setLoading(true);  // Show loader when logout starts
+    setLogoutMessage('');  // Clear any previous message
+
+    try {
+      // Call logoutUser from your API
+      await logoutUser();
+      setLogoutMessage('Logout successful! Redirecting...');  // Set success message
+
+      // After a short delay, navigate to the login screen
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }, 2000);  // 2 seconds delay to show the success message
+    } catch (error) {
+      console.error('Error during logout:', error.message);
+      setLogoutMessage('Logout failed. Please try again.');
+    } finally {
+      setLoading(false);  // Hide loader once logout is complete
+    }
   };
 
   if (loading) {
@@ -204,6 +228,8 @@ const AccountScreen: React.FC = () => {
         >
           <Text style={{ color: '#FFFFFF', textAlign: 'center', fontSize: 16, fontWeight: 'bold' }}>Save Password</Text>
         </TouchableOpacity>
+
+        {/* Logout Button */}
         <TouchableOpacity
           style={{
             backgroundColor: '#DC2626',
@@ -212,9 +238,22 @@ const AccountScreen: React.FC = () => {
             marginTop: 16,
           }}
           onPress={handleLogout}
+          disabled={loading}  // Disable the button while loading
         >
-          <Text style={{ color: '#FFFFFF', textAlign: 'center', fontSize: 16, fontWeight: 'bold' }}>Logout</Text>
+          <Text style={{ color: '#FFFFFF', textAlign: 'center', fontSize: 16, fontWeight: 'bold' }}>
+            {loading ? 'Logging Out...' : 'Logout'}
+          </Text>
         </TouchableOpacity>
+
+        {/* Show the success message after logout */}
+        {loading && (
+          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
+            <ActivityIndicator size="large" color="#0D9488" />
+            <Text style={{ marginLeft: 10, fontSize: 16, color: '#0D9488' }}>
+              {logoutMessage}
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </Layout>
   );

@@ -197,3 +197,39 @@ export const logoutUser = async () => {
     throw new Error(error.message || 'Error during logout');
   }
 };
+
+// Fetch Salary Data for a Month
+export const fetchSalaryData = async (month) => {
+  const apiUrl = `${BASE_URL}/salary`;
+
+  if (!month) {
+    throw new Error('Month parameter is required to fetch salary data');
+  }
+
+  try {
+    const token = await getAuthToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${apiUrl}?month=${month}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorResponse = await response.text();
+      throw new Error(`Error fetching salary data: ${errorResponse}`);
+    }
+
+    const data = await response.json();
+    console.log('Salary Data:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching salary data:', error.message);
+    throw new Error(error.message || 'Error fetching salary data');
+  }
+};

@@ -9,6 +9,7 @@ import HomeScreen from './screens/HomeScreen';
 import CheckInScreen from './screens/CheckInScreen';
 import CheckOutScreen from './screens/CheckOutScreen';
 import TakeBreakScreen from './screens/TakeBreakScreen';
+import SalaryScreen from './screens/SalaryScreen';
 import LeaveScreen from './screens/LeaveScreen';
 import NotificationScreen from './screens/NotificationScreen';
 import AttendanceRecord from './screens/AttendanceRecord';
@@ -138,6 +139,13 @@ const AppDrawer: React.FC = () => (
     <Drawer.Screen
       name="Take-Break"
       component={TakeBreakScreen}
+      options={{
+        drawerIcon: ({ size }) => <Icon name="local-cafe" size={size} color="white" />,
+      }}
+    />
+    <Drawer.Screen
+      name="Salary"
+      component={SalaryScreen}
       options={{
         drawerIcon: ({ size }) => <Icon name="local-cafe" size={size} color="white" />,
       }}

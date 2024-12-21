@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  Pressable,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { getUserData, clearUserData, getAuthToken } from '../api/api';
-import Sidebar from '../components/Sidebar';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-// Define types for navigation and user
 type RootStackParamList = {
   Login: undefined;
   Account: undefined;
@@ -20,12 +26,11 @@ interface User {
   email: string;
 }
 
-// API function for logging out
 const logoutApiCall = async () => {
   const apiUrl = 'https://at.realvictorygroups.xyz/api/logout';
 
   try {
-    const token = await getAuthToken(); // Retrieve token from AsyncStorage
+    const token = await getAuthToken();
     if (!token) {
       throw new Error('No authentication token found');
     }
@@ -53,26 +58,18 @@ const logoutApiCall = async () => {
 const Header: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const navigation = useNavigation<NavigationProp>();
 
-  // Fetch user data from AsyncStorage on mount
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const token = await getAuthToken();
-        console.log('Token:', token);
-
         if (token) {
           const storedUser = await getUserData();
-          console.log('User Data:', storedUser);
-
           if (storedUser) {
             setUser(storedUser);
-          } else {
-            console.log('No user data found.');
           }
-        } else {
-          console.log('No token found.');
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -81,41 +78,37 @@ const Header: React.FC = () => {
     fetchUserData();
   }, []);
 
-  // Function to open the sidebar (drawer)
   const openSidebar = () => {
-    navigation.openDrawer(); // This will open the drawer/sidebar
+    navigation.openDrawer();
   };
 
-  // Handle logout
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
-      await logoutApiCall(); // Call API to logout
-      await clearUserData(); // Clear user data and token from AsyncStorage
-
-      // Reset the navigation stack and navigate to 'Login' screen
+      await logoutApiCall();
+      await clearUserData();
+      Alert.alert('Logout Successful', 'You have been logged out successfully.');
       navigation.reset({
-        index: 0, // Set the first screen in the stack
-        routes: [{ name: 'Login' }], // Navigate to the Login screen
+        index: 0,
+        routes: [{ name: 'Login' }],
       });
     } catch (error) {
       console.error('Error during logout:', error);
-      // Optionally show a message to the user
+      Alert.alert('Logout Failed', 'An error occurred during logout. Please try again.');
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
   return (
     <View className="w-full flex-row items-center justify-between bg-teal-600 p-4 border-b border-teal-500 shadow-md">
-      {/* Left Section with Hamburger Icon and Title */}
       <View className="flex-row items-center">
         <TouchableOpacity onPress={openSidebar} className="mr-4">
           <MaterialIcons name="menu" size={28} color="white" />
         </TouchableOpacity>
-        <Text className="text-lg font-semibold text-white">
-          Real Vector Group
-        </Text>
+        <Text className="text-lg font-semibold text-white">Real Vector Group</Text>
       </View>
 
-      {/* Right Profile Section */}
       <TouchableOpacity
         onPress={() => setModalVisible(true)}
         className="flex-row items-center space-x-2"
@@ -128,17 +121,13 @@ const Header: React.FC = () => {
         <MaterialIcons name="keyboard-arrow-down" size={24} color="white" />
       </TouchableOpacity>
 
-      {/* Dropdown Modal */}
       <Modal
         transparent={true}
         animationType="fade"
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <Pressable
-          className="flex-1"
-          onPress={() => setModalVisible(false)}
-        >
+        <Pressable className="flex-1" onPress={() => setModalVisible(false)}>
           <View className="absolute top-20 right-4 bg-white rounded-lg shadow-lg p-4 w-60">
             {user && (
               <>
@@ -176,8 +165,14 @@ const Header: React.FC = () => {
                 handleLogout();
               }}
             >
-              <MaterialIcons name="logout" size={22} color="#E53E3E" />
-              <Text className="text-red-500 text-base">Logout</Text>
+              {isLoggingOut ? (
+                <ActivityIndicator size="small" color="#E53E3E" />
+              ) : (
+                <MaterialIcons name="logout" size={22} color="#E53E3E" />
+              )}
+              <Text className="text-red-500 text-base">
+                {isLoggingOut ? 'Logging out...' : 'Logout'}
+              </Text>
             </TouchableOpacity>
           </View>
         </Pressable>
